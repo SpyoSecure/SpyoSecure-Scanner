@@ -4,10 +4,15 @@ This is a program you can scan your network and files
 For making the program work you need to install some library for python this is the list
 
 pip install subprocess
+
 pip install time
+
 pip install requests
+
 pip install scapy
+
 pip install hashlib
+
 pip install tk
 
 And you need to replace the VirusTotal Api in the program with your own one this is how you get the api
