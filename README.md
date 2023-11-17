@@ -3,19 +3,11 @@ This is a program you can scan your network and files
 
 For making the program work you need to install some library for python this is the list
 
-pip install subprocess
+```bash
+pip install -r requirements.txt
+```
 
-pip install time
-
-pip install requests
-
-pip install scapy
-
-pip install hashlib
-
-pip install tk
-
-And you need to replace the VirusTotal Api in the program with your own one this is how you get the api
+Additionally, before running the program, you must replace the VirusTotal API key with your own. Follow these steps to obtain your API key:
 
 1. **Sign Up/Register**: Go to the [VirusTotal website](https://www.virustotal.com/). If you don't already have an account, you will need to sign up. Click on the 'Sign Up' button and follow the registration process.
 
@@ -36,4 +28,4 @@ And you need to replace the VirusTotal Api in the program with your own one this
 
 For more detailed information or if you encounter any issues, please refer to the official VirusTotal documentation or their support resources.
 
-This program is made by SpyoSecure Team if you need any help you can always conntact us 
+This program is made by SpyoSecure Team. If you need any help, you can always contact us.
