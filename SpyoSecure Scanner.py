@@ -247,14 +247,5 @@ def main_menu():
         else:
             print("Invalid choice. Please try again.")
 
-def main():
-    choice = input("Do you want to scan a (F)ile or (D)irectories? [F/D]: ").upper()
-    if choice == 'F':
-        scan_single_file()
-    elif choice == 'D':
-        scan_directories()
-    else:
-        print("Invalid choice.")
-
 if __name__ == "__main__":
     main_menu()
