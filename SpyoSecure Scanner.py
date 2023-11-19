@@ -2,66 +2,80 @@ import subprocess
 import time
 import requests
 import os
-from scapy.all import sniff
+from scapy.all import sniff, IP
 import hashlib
 import tkinter as tk
 from tkinter import messagebox
+import socket
+
 
 API_KEY = 'ADD API HERE'  # Replace with your VirusTotal API key
+
 
 def check_system_updates():
     print("Opening Windows Update settings...")
     subprocess.run("start ms-settings:windowsupdate", shell=True)
     input("Press any key to continue...")
 
+
 def check_firewall_status():
     print("Checking firewall status...")
     subprocess.run(["powershell", "-Command", "Get-NetFirewallProfile"])
     input("Press any key to continue...")
+
 
 def check_antivirus_status():
     print("Checking antivirus status...")
     subprocess.run(["powershell", "-Command", "Get-MpComputerStatus"])
     input("Press any key to continue...")
 
+
 def list_installed_programs():
     print("Listing installed programs...")
     subprocess.run(["powershell", "-Command", "Get-WmiObject -Class Win32_Product | Select-Object -Property Name"])
     input("Press any key to continue...")
+
 
 def check_network_status():
     print("Checking network status...")
     subprocess.run(["powershell", "-Command", "Get-NetAdapter | Select-Object -Property Name, Status"])
     input("Press any key to continue...")
 
+
 def view_system_info():
     print("Viewing system information...")
     subprocess.run(["systeminfo"])
     input("Press any key to continue...")
+
 
 def view_running_processes():
     print("Viewing running processes...")
     subprocess.run(["tasklist"])
     input("Press any key to continue...")
 
+
 def check_disk_usage():
     print("Checking disk usage...")
     subprocess.run(["powershell", "-Command", "Get-PSDrive C | Select-Object -Property Used, Free"])
     input("Press any key to continue...")
+
 
 def view_system_logs():
     print("Viewing system logs...")
     subprocess.run(["powershell", "-Command", "Get-EventLog -LogName System -Newest 10"])
     input("Press any key to continue...")
 
+
 def check_network_connections():
     print("Checking network connections...")
     subprocess.run(["netstat", "-an"])
     input("Press any key to continue...")
 
+
 def check_other_users():
     main_user = input("Enter the main user's name: ")
     print("Checking for other users on the PC...")
+
 
     result = subprocess.run(["powershell", "-Command", "Get-LocalUser | Select-Object -Property Name"], capture_output=True, text=True)
     users = result.stdout.split('\r\n')
@@ -77,14 +91,34 @@ def check_other_users():
         print("No other users found on the PC.")
         input("Press any key to continue...")
 
+def resolve_ip_to_hostname(ip):
+    try:
+        # Attempt to resolve the IP to a hostname
+        return socket.gethostbyaddr(ip)[0]
+    except socket.herror:
+        # If the hostname could not be resolved, return the IP
+        return ip
+
 def monitor_network_traffic():
+    def process_packet(packet):
+        if IP in packet:
+            src_ip = packet[IP].src
+            dst_ip = packet[IP].dst
+
+            # Resolve IPs to hostnames
+            src_hostname = resolve_ip_to_hostname(src_ip)
+            dst_hostname = resolve_ip_to_hostname(dst_ip)
+
+            # Output the packet information including the resolved hostnames
+            print(f"Ether / IP / TCP {src_ip} ({src_hostname}) > {dst_ip} ({dst_hostname}) {packet.summary()}")
+
     print("Monitoring network traffic (press Ctrl+C to stop)...")
     try:
-        sniff(prn=lambda x: x.summary(), store=False, count=10)
+        sniff(prn=process_packet, store=False)
     except KeyboardInterrupt:
         print("\nStopped network monitoring.")
     finally:
-        input("Press any key to continue...")
+        input("Press any key to continue...") 
 
 def get_file_hash(file_path):
     sha256_hash = hashlib.sha256()
@@ -92,6 +126,7 @@ def get_file_hash(file_path):
         for byte_block in iter(lambda: f.read(4096), b""):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
+
 
 def scan_file_virustotal(file_path):
     # First, get the hash of the file and check if it has already been scanned
@@ -103,6 +138,7 @@ def scan_file_virustotal(file_path):
     }
     response = requests.get('https://www.virustotal.com/vtapi/v2/file/report', params=params, headers=headers)
 
+
     # If the file has not been scanned before, submit it for scanning
     if response.status_code != 200 or response.json().get('response_code') == 0:
         files = {'file': (os.path.basename(file_path), open(file_path, 'rb'))}
@@ -113,6 +149,7 @@ def scan_file_virustotal(file_path):
             time.sleep(15)
             # Recheck the report after submission
             response = requests.get('https://www.virustotal.com/vtapi/v2/file/report', params=params, headers=headers)
+
 
     # Check the report for scan results
     if response.status_code == 200:
